@@ -1,4 +1,5 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -10,25 +11,35 @@ client = OpenAI(
     api_key=api_key,
 )
 
-response = client.chat.completions.create(
-    model="openrouter/free",
-    messages=[
+parser = argparse.ArgumentParser(description="Chatbot")
+parser.add_argument("user_prompt", type=str, help="User prompt")
+parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+args = parser.parse_args()
+# Now we can access `args.user_prompt`
+
+messages = [
         {
             "role": "user",
-            "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+            "content": args.user_prompt 
         }
-    ],
-)
+    ]
+
+
+response = client.chat.completions.create(
+    model="openrouter/free",
+    messages=messages,
+    )
 
 def main():
     print("Hello from codeagent!")
-    print(f"User prompt: {response.choices[0]
-
-    if respons.usage is None:
-        print(f"Prompt tokens: {respone.usage.prompt_tokens}")
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}")
+        print(f"Prompt tokens: {response.usage.prompt_tokens}")
         print(f"Response tokens: {response.usage.completion_tokens}")
-    else:
+ 
+    if response.usage is None:
         raise RuntimeError("no usage")
+    
 
     if api_key is None:
         raise RuntimeError("no api key")
