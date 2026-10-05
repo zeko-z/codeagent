@@ -30,7 +30,7 @@ response = client.chat.completions.create(
     messages=messages,
     )
 
-def main():
+def main() -> None:
     print("Hello from codeagent!")
     if args.verbose:
         print(f"User prompt: {args.user_prompt}")
