@@ -1,7 +1,10 @@
 import os
 import argparse
+import json
+from call_function import available_functions, call_function
 from dotenv import load_dotenv
 from openai import OpenAI
+from prompts import system_prompt
 
 load_dotenv()
 api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -18,17 +21,18 @@ args = parser.parse_args()
 # Now we can access `args.user_prompt`
 
 messages = [
-        {
-            "role": "user",
-            "content": args.user_prompt 
-        }
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": args.user_prompt},
     ]
 
 
 response = client.chat.completions.create(
     model="openrouter/free",
     messages=messages,
+    tools=available_functions,
     )
+
+message = response.choices[0].message
 
 def main() -> None:
     print("Hello from codeagent!")
@@ -43,6 +47,19 @@ def main() -> None:
 
     if api_key is None:
         raise RuntimeError("no api key")
+
+
+    for tool_call in message.tool_calls:
+        result_message = call_function(tool_call)
+        
+        if not result_message['content']:
+            raise Exception("content missing")
+
+        if args.verbose:
+            print(f"-> {result_message['content']}")
+
+        function_args = json.loads(tool_call.function.arguments or "{}")
+        print(f"Calling function: {tool_call.function.name}({function_args})")
     
     print(response.choices[0].message.content)
 
